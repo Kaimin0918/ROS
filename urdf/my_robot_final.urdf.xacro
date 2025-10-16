@@ -1,0 +1,99 @@
+<?xml version="1.0" ?>
+<!-- 
+  這是一個 URDF (Unified Robot Description Format) 檔案，使用 XACRO (XML Macros) 進行擴展。
+  它定義了您的 TurtleBot3 Burger 機器人的所有物理和感測器屬性。
+  機器人名稱: my_custom_turtlebot3_burger
+-->
+<robot name="my_custom_turtlebot3_burger" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- 匯入通用的物理屬性定義 (例如顏色) -->
+  <xacro:include filename="$(find turtlebot3_description)/urdf/common_properties.xacro"/>
+
+  <!-- ================== 物理結構定義 (Links 和 Joints) ================== -->
+  <!-- 
+    Link: 機器人的剛性部件，例如底盤、輪子。
+    Joint: 連接兩個 Link 的關節，定義了它們之間的相對運動方式。
+  -->
+
+  <!-- 基礎座標系，通常位於地面，作為整個機器人的移動基準 -->
+  <link name="base_footprint"/>
+
+  <!-- 將機器人主體 (base_link) 固定在基礎座標系 (base_footprint) 之上 -->
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/><child link="base_link"/><origin xyz="0.0 0.0 0.010" rpy="0 0 0"/>
+  </joint>
+
+  <!-- 機器人主底盤 (base_link) -->
+  <link name="base_link">
+    <visual> <!-- 外觀模型，用於 RViz 和 Gazebo 中的視覺呈現 -->
+      <origin xyz="-0.032 0 0.0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://turtlebot3_description/meshes/bases/burger_base.stl" scale="0.001 0.001 0.001"/></geometry>
+      <material name="light_black"/>
+    </visual>
+    <collision> <!-- 碰撞模型，用於 Gazebo 中的物理模擬 -->
+      <origin xyz="-0.032 0 0.070" rpy="0 0 0"/>
+      <geometry><box size="0.140 0.140 0.143"/></geometry>
+    </collision>
+    <inertial> <!-- 慣性參數，用於物理模擬 -->
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="8.25735e-01"/>
+      <inertia ixx="2.2124e-03" ixy="-1.2294e-05" ixz="3.4938e-05" iyy="2.1193e-03" iyz="-5.0120e-06" izz="2.0064e-03" />
+    </inertial>
+  </link>
+
+  <!-- 左輪關節 (可連續旋轉) -->
+  <joint name="wheel_left_joint" type="continuous"><parent link="base_link"/><child link="wheel_left_link"/><origin xyz="0.0 0.08 0.023" rpy="-1.57 0 0"/><axis xyz="0 0 1"/></joint>
+  <link name="wheel_left_link">
+    <visual><origin xyz="0 0 0" rpy="1.57 0 0"/><geometry><mesh filename="package://turtlebot3_description/meshes/wheels/left_tire.stl" scale="0.001 0.001 0.001"/></geometry><material name="dark"/></visual>
+    <collision><origin xyz="0 0 0" rpy="0 0 0"/><geometry><cylinder length="0.018" radius="0.033"/></geometry></collision>
+    <inertial><origin xyz="0 0 0" /><mass value="2.8498e-02" /><inertia ixx="1.1175e-05" ixy="-4.2369e-11" ixz="-5.9381e-09" iyy="1.1192e-05" iyz="-1.4400e-11" izz="2.0712e-05" /></inertial>
+  </link>
+
+  <!-- 右輪關節 (可連續旋轉) -->
+  <joint name="wheel_right_joint" type="continuous"><parent link="base_link"/><child link="wheel_right_link"/><origin xyz="0.0 -0.080 0.023" rpy="-1.57 0 0"/><axis xyz="0 0 1"/></joint>
+  <link name="wheel_right_link">
+    <visual><origin xyz="0 0 0" rpy="1.57 0 0"/><geometry><mesh filename="package://turtlebot3_description/meshes/wheels/right_tire.stl" scale="0.001 0.001 0.001"/></geometry><material name="dark"/></visual>
+    <collision><origin xyz="0 0 0" rpy="0 0 0"/><geometry><cylinder length="0.018" radius="0.033"/></geometry></collision>
+    <inertial><origin xyz="0 0 0" /><mass value="2.8498e-02" /><inertia ixx="1.1175e-05" ixy="-4.2369e-11" ixz="-5.9381e-09" iyy="1.1192e-05" iyz="-1.4400e-11" izz="2.0712e-05" /></inertial>
+  </link>
+
+  <!-- 後方的萬向輪 (固定關節) -->
+  <joint name="caster_back_joint" type="fixed"><parent link="base_link"/><child link="caster_back_link"/><origin xyz="-0.081 0 -0.004" rpy="-1.57 0 0"/></joint>
+  <link name="caster_back_link">
+    <collision><origin xyz="0 0.001 0" rpy="0 0 0"/><geometry><box size="0.030 0.009 0.020"/></geometry></collision>
+    <inertial><origin xyz="0 0 0" /><mass value="0.005" /><inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" /></inertial>
+  </link>
+
+  <!-- IMU (慣性測量單元) 感測器關節 (固定) -->
+  <joint name="imu_joint" type="fixed"><parent link="base_link"/><child link="imu_link"/><origin xyz="-0.032 0 0.068" rpy="0 0 0"/></joint>
+  <link name="imu_link"/>
+
+  <!-- 雷射掃描儀 (LDS) 關節 (固定) -->
+  <joint name="scan_joint" type="fixed"><parent link="base_link"/><child link="base_scan"/><origin xyz="-0.032 0 0.172" rpy="0 0 0"/></joint>
+  <link name="base_scan">
+    <visual><origin xyz="0 0 0.0" rpy="0 0 0"/><geometry><mesh filename="package://turtlebot3_description/meshes/sensors/lds.stl" scale="0.001 0.001 0.001"/></geometry><material name="dark"/></visual>
+    <collision><origin xyz="0.015 0 -0.0065" rpy="0 0 0"/><geometry><cylinder length="0.0315" radius="0.055"/></geometry></collision>
+    <inertial><mass value="0.114" /><origin xyz="0 0 0" /><inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001" /></inertial>
+  </link>
+
+  <!-- ================== Gazebo 模擬器插件定義 ================== -->
+  <!-- 
+    這裡的 <gazebo> 標籤是用來為 Gazebo 模擬器提供額外的物理屬性（如摩擦力、顏色）和插件。
+  -->
+  <gazebo reference="base_link"><material>Gazebo/DarkGrey</material></gazebo>
+  <gazebo reference="wheel_left_link"><mu1>0.1</mu1><mu2>0.1</mu2><kp>500000.0</kp><kd>10.0</kd><minDepth>0.001</minDepth><maxVel>0.1</maxVel><fdir1>1 0 0</fdir1><material>Gazebo/FlatBlack</material></gazebo>
+  <gazebo reference="wheel_right_link"><mu1>0.1</mu1><mu2>0.1</mu2><kp>500000.0</kp><kd>10.0</kd><minDepth>0.001</minDepth><maxVel>0.1</maxVel><fdir1>1 0 0</fdir1><material>Gazebo/FlatBlack</material></gazebo>
+  <gazebo reference="caster_back_link"><mu1>0.1</mu1><mu2>0.1</mu2><kp>1000000.0</kp><kd>100.0</kd><minDepth>0.001</minDepth><maxVel>1.0</maxVel><material>Gazebo/FlatBlack</material></gazebo>
+  <gazebo reference="imu_link"><sensor type="imu" name="imu"><always_on>true</always_on><visualize>false</visualize></sensor><material>Gazebo/FlatBlack</material></gazebo>
+  
+  <!-- 差速驅動插件: 負責模擬機器人的兩個驅動輪，並從 /cmd_vel 接收速度指令 -->
+  <gazebo>
+    <plugin name="turtlebot3_burger_controller" filename="libgazebo_ros_diff_drive.so">
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <odometrySource>world</odometrySource>
+      <!-- 【【【 核心修正！！！】】】 -->
+      <!-- 設為 false，明確禁止此插件發布 odom -> base_footprint 的 TF 轉換，以避免與 robot_state_publisher 衝突 -->
+      <publishOdomTF>ture</publishOdomTF
+

@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="my_custom_world">
+    <!-- 加入太陽光 -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <!-- 加入地圖模型 -->
+    <include>
+      <uri>model://gazebo_model</uri>
+      <name>my_map</name>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+    
+    <!-- *** 加入初始俯視圖設定 *** -->
+    <gui>
+      <camera name="user_camera">
+        <!-- 
+          Pose 格式: X Y Z Roll Pitch Yaw (單位是公尺與弧度)
+          X=0 Y=0 Z=20: 將攝影機放在世界中心正上方 20 公尺處。
+          Roll=0 Pitch=1.5707 Yaw=0: 將攝影機向下旋轉 90 度，實現俯視效果。
+        -->
+        <pose>0 0 20 0 1.5707 0</pose>
+      </camera>
+    </gui>
+    
+  </world>
+</sdf>
+

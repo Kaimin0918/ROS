@@ -1,0 +1,58 @@
+<launch>
+    <!-- ===================================================================================== -->
+    <!-- |    模擬/實機 巡邏任務啟動檔 (v1.2 - 實機優化版)                               | -->
+    <!-- ===================================================================================== -->
+
+    <!-- 參數定義 -->
+    <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
+    <arg name="world_name" default="$(find blender_map_project)/worlds/real_models.world"/>
+    <arg name="map_file" default="$(find blender_map_project)/maps/mapnametest.yaml"/>
+    <arg name="rviz_config" default="$(find blender_map_project)/rviz/costmaptest.rviz"/>
+    
+    <!-- 這個參數控制是否啟用模擬時間。對於 Gazebo 模擬，必須為 true。-->
+    <arg name="use_sim_time" default="false"/>
+    
+
+    <!-- ========================= 模擬環境專用 (is_simulation=true) ========================= -->
+    <group if="$(arg use_sim_time)">
+        <!--  啟動 Gazebo 模擬環境 -->
+        <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <arg name="world_name" value="$(arg world_name)"/>
+            <arg name="paused" value="false"/>
+            <arg name="use_sim_time" value="true"/>
+            <arg name="gui" value="true"/>
+            <arg name="headless" value="false"/>
+            <arg name="debug" value="false"/>
+        </include>
+
+        <!--  在 Gazebo 中生成機器人模型 -->
+        <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
+        <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf"
+              args="-urdf -model turtlebot3_burger -x $(arg initial_pose_x) -y $(arg initial_pose_y) -z 0.2 -param robot_description" />
+        
+        <node pkg="gazebo_ros" type="spawn_model" name="spawn_visual_goal"
+              args="-sdf -file $(find blender_map_project)/models/visual_goal.sdf -model visual_goal -x 0 -y 0 -z -1.0" />
+        
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    </group>
+
+    <!-- ========================= 通用節點 (模擬與實機共用) ========================= -->
+
+    <!--  啟動地圖伺服器 -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"/>
+
+    
+    <!--  啟動 Rviz -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" required="true" />
+      <!-- 7. rosbridge 與 web 視訊（供 Web 端控制與監看） -->
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+  <node pkg="web_video_server" type="web_video_server" name="web_video_server" output="screen"/>
+    <!--  啟動我們的「Costmap 巡邏任務指揮中心」腳本 -->
+    <!-- 增加 10 秒延遲，確保 move_base 和 amcl 有足夠時間初始化 -->
+    <node name="patrol_manager_costmap" pkg="blender_map_project" 
+    type="patrol_manager.py" 
+          output="screen" launch-prefix="bash -c 'sleep 10; $0 $@' "/>
+
+</launch>
+
+

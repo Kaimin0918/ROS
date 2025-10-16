@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="visual_goal">
+    <!-- 設為 kinematic，讓它不受物理力影響，只能透過服務移動 -->
+    <kinematic>true</kinematic>
+    <link name="link">
+      <!-- 再次確保此連結不受重力影響 -->
+      <gravity>false</gravity>
+
+      <!-- 
+        ★★★ 關鍵修改 ★★★
+        我們移除了整個 <collision> 區塊。
+        現在這個模型在物理引擎眼中是完全透明的，
+        只剩下一個可見的外觀。
+      -->
+
+      <!-- 視覺外觀 (保持不變) -->
+      <visual name="visual">
+        <geometry>
+          <cylinder>
+            <radius>0.15</radius>
+            <height>0.02</height>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Red</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>
+

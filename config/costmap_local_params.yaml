@@ -1,0 +1,25 @@
+global_frame: odom
+robot_base_frame: base_footprint
+update_frequency: 5.0
+publish_frequency: 2.0
+transform_tolerance: 0.5
+static_map: false
+rolling_window: true
+width: 3.0
+height: 3.0
+resolution: 0.005745
+
+plugins:
+  - {name: static_layer, type: "costmap_2d::StaticLayer"}
+  - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+
+static_layer:
+  map_topic: /map
+  subscribe_to_updates: true
+  track_unknown_space: true
+  use_maximum: false
+
+inflation_layer:
+  inflation_radius: 0.55
+  cost_scaling_factor: 10.0
+
